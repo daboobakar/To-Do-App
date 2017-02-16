@@ -10,7 +10,7 @@ import UIKit
 
 class ChecklistViewController: UITableViewController, AddItemViewControllerDelegate {
     
-   
+    
     var items: [ChecklistItem]
     
     required init?(coder aDecoder: NSCoder) {
@@ -30,25 +30,25 @@ class ChecklistViewController: UITableViewController, AddItemViewControllerDeleg
         row2item.text = "Learn iOS development"
         row2item.checked = true
         items.append(row2item)
-
+        
         let row3item = ChecklistItem()
         row3item.text = "Soccer practice"
         row3item.checked = false
         items.append(row3item)
-
+        
         let row4item = ChecklistItem()
         row4item.text = "Eat ice cream"
         row4item.checked = true
         items.append(row4item)
-
+        
         super.init(coder: aDecoder)
     }
-
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view, typically from a nib.
     }
-
+    
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
@@ -69,7 +69,7 @@ class ChecklistViewController: UITableViewController, AddItemViewControllerDeleg
         configureText(for: cell, with: item)
         configureCheckmark(for: cell, with: item)
         return cell
-    
+        
     }
     
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
@@ -88,17 +88,21 @@ class ChecklistViewController: UITableViewController, AddItemViewControllerDeleg
     override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCellEditingStyle, forRowAt indexPath: IndexPath) {
         
         items.remove(at: indexPath.row)
-    
+        
         let indexPaths = [indexPath]
         tableView.deleteRows(at: indexPaths, with: .automatic)
     }
     
     func configureCheckmark(for cell: UITableViewCell, with item: ChecklistItem) {
         
+        let label = cell.viewWithTag(1001) as! UILabel
+        let checkMark = "✓"
+        label.backgroundColor = UIColor(patternImage: UIImage(named: "checkmark")!)
+        
         if item.checked {
-            cell.accessoryType = .checkmark
+            label.text = checkMark
         } else {
-            cell.accessoryType = .none
+            label.text = ""
         }
     }
     
@@ -123,19 +127,42 @@ class ChecklistViewController: UITableViewController, AddItemViewControllerDeleg
         dismiss(animated: true, completion: nil)
     }
     
+    func addItemViewController(_ controller: AddItemViewController, didFinishEditing item: ChecklistItem) {
+        
+        if let index = items.index(of: item) {
+            let indexPath = IndexPath(row: index, section: 0)
+            if let cell = tableView.cellForRow(at: indexPath) {
+                configureText(for: cell, with: item)
+            }
+        }
+        dismiss(animated: true, completion: nil)
+    }
+    
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         // 1
         if segue.identifier == "AddItem" {
-        // 2
-        let navigationController = segue.destination as! UINavigationController
-        // 3
-        let controller = navigationController.topViewController as! AddItemViewController
-        // 4
-        controller.delegate = self
+            // 2
+            let navigationController = segue.destination as! UINavigationController
+            // 3
+            let controller = navigationController.topViewController as! AddItemViewController
+            // 4
+            controller.delegate = self
+            
+        }
+        else if segue.identifier == "EditItem" {
+            
+            let navigationController = segue.destination as! UINavigationController
+            let controller = navigationController.topViewController as! AddItemViewController
+            
+            controller.delegate = self
+            
+            if let indexPath = tableView.indexPath( for: sender as! UITableViewCell) {
+                controller.itemToEdit = items[indexPath.row]
+            }
         }
     }
     
     
-
+    
 }
 
